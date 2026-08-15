@@ -22,7 +22,7 @@ namespace DubSiren {
 namespace GPIO {
     // Encoder pins (CLK, DT)
     constexpr int ENCODER_1_CLK = 17;
-    constexpr int ENCODER_1_DT = 2;
+    constexpr int ENCODER_1_DT = 5;
     constexpr int ENCODER_2_CLK = 27;
     constexpr int ENCODER_2_DT = 22;
     constexpr int ENCODER_3_CLK = 23;
