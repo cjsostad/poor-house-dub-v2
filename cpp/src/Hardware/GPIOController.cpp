@@ -612,8 +612,8 @@ void GPIOController::handleEncoder(int encoderIndex, int direction) {
     }
     else if (strcmp(paramName, "filter_freq") == 0) {
         // Logarithmic control for full range in ~1 rotation (24 steps)
-        float multiplier = (direction > 0) ? 1.32f : (1.0f / 1.32f);
-        params.filterFreq = clamp(params.filterFreq * multiplier, 20.0f, 20000.0f);
+        float multiplier = (direction > 0) ? 1.15f : (1.0f / 1.15f);
+        params.filterFreq = clamp(params.filterFreq * multiplier, 250.0f, 20000.0f);
         engine.setFilterCutoff(params.filterFreq);
         newValue = params.filterFreq;
     }
