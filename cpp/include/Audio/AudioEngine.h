@@ -117,6 +117,9 @@ private:
     AudioParameter<float> volume;
     AudioParameter<float> baseFrequency;
     AudioParameter<float> lfoPitchDepth;  // LFO pitch modulation depth
+    float sweepMin = 1.0e9f;   // Debug: swept frequency range tracking
+    float sweepMax = 0.0f;
+    int sweepSampleCount = 0;
     AudioParameter<PitchEnvelopeMode> pitchEnvMode;
     
     // Internal state
@@ -126,7 +129,9 @@ private:
     // Pitch envelope state
     bool inReleasePhase;
     float pitchEnvStartLevel;  // Envelope level when release started
-    
+
+    float voicingLPState = 0.0f;   // One-pole output voicing filter state
+
     // Temporary buffers (pre-allocated to avoid allocation in audio thread)
     std::vector<float> oscBuffer;
     std::vector<float> envBuffer;

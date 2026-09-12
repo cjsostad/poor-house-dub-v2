@@ -1,5 +1,6 @@
 #include "Audio/AudioEngine.h"
 #include <cstring>
+#include <cstdio>
 #include <cmath>
 #include <algorithm>
 
@@ -39,9 +40,9 @@ AudioEngine::AudioEngine(int sampleRate, int bufferSize)
     envelope.setRelease(0.5f);
     filter.setCutoff(1800.0f);   // Darker base - tames square wave buzz
     filter.setResonance(1.0f);   // Gentle - no resonant drama at the crossover
-    delay.setDryWet(0.3f);
+    delay.setDryWet(0.0f);   // FX off at boot during voicing work; encoder brings it up
     delay.setFeedback(0.55f);    // Spacey dub echoes
-    reverb.setDryWet(0.4f);      // Wet for atmosphere
+    reverb.setDryWet(0.0f);      // FX off at boot during voicing work; encoder brings it up
 }
 
 void AudioEngine::process(float* output, int numFrames) {
@@ -102,8 +103,20 @@ void AudioEngine::process(float* output, int numFrames) {
         // Smooth frequency changes to avoid clicks
         frequencySmooth.setTarget(targetFreq);
         currentFrequency = frequencySmooth.getNext();
+        if (currentFrequency < sweepMin) sweepMin = currentFrequency;
+        if (currentFrequency > sweepMax) sweepMax = currentFrequency;
         oscillator.setFrequency(currentFrequency);
         oscBuffer[i] = oscillator.generateSample();
+    }
+
+    // Debug: report swept pitch range once per second
+    sweepSampleCount += numFrames;
+    if (sweepSampleCount >= 48000) {
+        printf("[Sweep] %.0f - %.0f Hz (%.1f octaves)\n",
+               sweepMin, sweepMax, std::log2(sweepMax / std::max(sweepMin, 1.0f)));
+        sweepSampleCount = 0;
+        sweepMin = 1.0e9f;
+        sweepMax = 0.0f;
     }
 
     // Apply LFO to filter cutoff and process
@@ -113,7 +126,7 @@ void AudioEngine::process(float* output, int numFrames) {
         float modCutoff = baseCutoff;   // Filter fixed at knob setting; LFO drives pitch only, like the S-1
         modCutoff = clamp(modCutoff, 20.0f, baseCutoff);  // LFO dips below the knob setting, never above it
         filter.setCutoff(modCutoff);
-        filterBuffer[i] = std::tanh(filter.processSample(oscBuffer[i]) * 0.8f);  // Soft saturation - resonant peaks compress smoothly instead of hard clipping
+        filterBuffer[i] = std::tanh(filter.processSample(oscBuffer[i]) * 1.5f);  // Drive: analog-style saturation warmth
     }
     filter.setCutoff(baseCutoff);
     
@@ -133,7 +146,14 @@ void AudioEngine::process(float* output, int numFrames) {
     // Apply reverb
     reverb.process(filterBuffer.data(), delayBuffer.data(), numFrames);
     std::copy(delayBuffer.begin(), delayBuffer.begin() + numFrames, filterBuffer.begin());
-    
+
+    // Output voicing: fixed gentle lowpass (~4.5 kHz one-pole), matching the
+    // S-1's high-end rolloff - hardware sirens all shape the top like this
+    for (int i = 0; i < numFrames; ++i) {
+        voicingLPState += 0.445f * (filterBuffer[i] - voicingLPState);
+        filterBuffer[i] = voicingLPState;
+    }
+
     // Apply DC blocking
     dcBlocker.process(filterBuffer.data(), filterBuffer.data(), numFrames);
     
@@ -225,7 +245,7 @@ void AudioEngine::setLfoDepth(float depth) {
 }
 
 void AudioEngine::setLfoPitchDepth(float depth) {
-    lfoPitchDepth.set(clamp(depth, 0.0f, 1.0f));
+    lfoPitchDepth.set(clamp(depth, 0.0f, 2.0f));
 }
 
 void AudioEngine::setLfoWaveform(Waveform wf) {

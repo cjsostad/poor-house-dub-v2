@@ -1,5 +1,6 @@
 #include "Hardware/GPIOController.h"
 #include <iostream>
+#include <cstdio>
 #include <cstring>
 #include <vector>
 #include <algorithm>
@@ -530,7 +531,7 @@ void GPIOController::start() {
     // Apply initial parameters (Auto Wail preset)
     engine.setVolume(params.volume);
     engine.setLfoDepth(params.lfoDepth);        // Filter modulation depth
-    engine.setLfoPitchDepth(0.5f);              // Auto Wail pitch modulation (wee-woo)
+    engine.setLfoPitchDepth(1.5f);              // Wide S-1 style wail: depth encoder now spans 0 to ±1.5 octaves
     engine.setLfoRate(params.lfoRate);
     engine.setLfoWaveform(Waveform::Triangle);  // Smooth pitch transitions
     engine.setFilterCutoff(params.filterFreq);
@@ -675,6 +676,8 @@ void GPIOController::handleEncoder(int encoderIndex, int direction) {
         params.oscWaveform = (params.oscWaveform + direction + 4) % 4;
         engine.setWaveform(params.oscWaveform);
         newValue = static_cast<float>(params.oscWaveform);
+        const char* wfNames[] = {"Sine", "Square (S-1 voice)", "Saw", "Triangle"};
+        printf("[Waveform] %s\n", wfNames[params.oscWaveform]);
     }
     else {
         return;
@@ -946,7 +949,7 @@ void GPIOController::exitSecretMode() {
         // Apply restored parameters (Auto Wail preset)
         engine.setVolume(params.volume);
         engine.setLfoDepth(params.lfoDepth);        // Filter modulation depth
-        engine.setLfoPitchDepth(0.5f);              // Auto Wail pitch modulation (wee-woo)
+        engine.setLfoPitchDepth(1.5f);              // Wide S-1 style wail: depth encoder now spans 0 to ±1.5 octaves
         engine.setLfoRate(params.lfoRate);
         engine.setLfoWaveform(Waveform::Triangle);  // Smooth pitch transitions
         engine.setFilterCutoff(params.filterFreq);
@@ -997,7 +1000,7 @@ void GPIOController::applySecretModePreset() {
                 params.reverbMix = 0.4f;      // Wet for atmosphere
                 // Apply LFO pitch modulation for automatic wail
                 engine.setLfoRate(2.0f);      // 2 Hz - wee-woo every 0.5 seconds
-                engine.setLfoPitchDepth(0.5f); // ±0.5 octaves for noticeable pitch swing
+                engine.setLfoPitchDepth(1.5f);              // Wide S-1 style wail: depth encoder now spans 0 to ±1.5 octaves
                 engine.setLfoWaveform(Waveform::Triangle); // Smooth pitch transitions
                 break;
 
