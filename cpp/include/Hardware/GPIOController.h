@@ -250,7 +250,7 @@ private:
         float filterRes = 0.5f;    // Standard resonance
         int oscWaveform = 1;  // Square for classic siren sound
         float reverbSize = 0.7f;   // Large dub space
-        float release = 0.5f;      // Moved from encoder control
+        float release = 1.2f;      // Longer release: extended fade tail and pitch glide
     };
     Parameters params;
     

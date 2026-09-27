@@ -595,9 +595,9 @@ void GPIOController::handleEncoder(int encoderIndex, int direction) {
     Bank bank = currentBank.load();
 
     // Bank A parameters
-    const char* bankAParams[] = {"lfo_depth", "base_freq", "filter_freq", "delay_feedback", "reverb_mix"};
+    const char* bankAParams[] = {"lfo_depth", "base_freq", "filter_freq", "delay_feedback", "lfo_rate"};
     // Bank B parameters
-    const char* bankBParams[] = {"lfo_rate", "delay_time", "filter_res", "osc_waveform", "reverb_size"};
+    const char* bankBParams[] = {"reverb_mix", "delay_time", "filter_res", "osc_waveform", "reverb_size"};
     
     const char* paramName = (bank == Bank::A) ? bankAParams[encoderIndex] : bankBParams[encoderIndex];
     

@@ -37,10 +37,10 @@ AudioEngine::AudioEngine(int sampleRate, int bufferSize)
     lfo.setDepth(0.5f);          // Filter modulation depth (controllable by encoder)
     lfo.setWaveform(Waveform::Triangle);  // Smooth pitch transitions
     envelope.setAttack(0.01f);
-    envelope.setRelease(0.5f);
+    envelope.setRelease(1.2f);   // Longer release: extended fade tail and pitch glide
     filter.setCutoff(1800.0f);   // Darker base - tames square wave buzz
     filter.setResonance(1.0f);   // Gentle - no resonant drama at the crossover
-    delay.setDryWet(0.0f);   // FX off at boot during voicing work; encoder brings it up
+    delay.setDryWet(0.3f);   // Fixed send level - no encoder controls this; feedback knob shapes the echo
     delay.setFeedback(0.55f);    // Spacey dub echoes
     reverb.setDryWet(0.0f);      // FX off at boot during voicing work; encoder brings it up
 }
